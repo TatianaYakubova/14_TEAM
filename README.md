@@ -120,5 +120,5 @@ wget https://storage.yandexcloud.net/natasha-navec/packs/navec_hudlit_v1_12B_500
 
 Открыть ноутбук в Colab: (https://colab.research.google.com/drive/1xF-_mvfzM3X8Wm28BfA3ilmMmTb94CXB?usp=sharing).
 
-Датасет `sentiment_dataset.csv` — в корне репозитория.
+Датасет `sentiment_dataset.csv` — https://www.kaggle.com/code/mishashikhov/russian-sentiment-analysis-with-cnn/input 
 
