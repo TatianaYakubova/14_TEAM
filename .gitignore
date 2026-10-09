@@ -21,3 +21,7 @@ models/
 .mypy_cache/
 .pytest_cache/
 notebooks/
+sentiment_dataset.csv
+navec_*.tar
+sentiment_predictions.csv
+*.ipynb
