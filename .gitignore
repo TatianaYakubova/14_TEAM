@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+/static
+
+# Virtual Environment (Виртуальные окружения)
+venv/
+ENV/
+env/
+.venv/
+
+# IDE (Настройки редакторов)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS (Системный мусор)
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment (Секретные файлы)
+.env
+.env.local
+.env.*.local
+
+# Node.js / React (Тяжелые папки)
+node_modules/
+react-frontend/node_modules/
+react-frontend/dist/
+react-frontend/build/
+
+# Тестирование
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ML и модель (Огромные файлы, которые нельзя в Git)
+data/
+models/
+*.pkl
+*.joblib
+*.h5
+*.pth
+*.npz
+*.npy
+notebooks/
+sentiment_dataset.csv
+navec_*.tar
+sentiment_predictions.csv
+*.ipynb
+
+# Docker и базы данных (Логи и данные)
+.docker/
+logs/
+db_data/
+
+# Прочее
+*.tmp
+*.bak
+*.backup
+schema.yml
+schema.json
+project_structure.txt
+structure.txt

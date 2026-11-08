@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CineMatch{% endblock %}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #121212; color: #fff; }
+        header { background: #1f1f1f; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        header h1 { margin: 0; color: #e50914; font-size: 24px; cursor: pointer; }
+        nav a { color: #ccc; text-decoration: none; margin-left: 20px; font-size: 16px; }
+        nav a:hover { color: #fff; }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .movie-card { background: #1f1f1f; border-radius: 8px; overflow: hidden; transition: transform 0.2s; }
+        .movie-card:hover { transform: scale(1.05); }
+        .movie-card img { width: 100%; height: 300px; object-fit: cover; }
+        .movie-info { padding: 15px; }
+        .movie-info h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .movie-info p { margin: 0; color: #aaa; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 onclick="window.location.href='/'">🎬 CineMatch</h1>
+        <nav>
+            <a href="/">Каталог</a>
+            <a href="/sentiment/">Анализ отзывов</a>
+            <a href="/admin/">Админка</a>
+        </nav>
+    </header>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Анализ отзывов - CineMatch{% endblock %}
+
+{% block content %}
+    <div style="max-width: 600px; margin: 0 auto; background: #1f1f1f; padding: 30px; border-radius: 10px;">
+        <h2>Анализ тональности отзыва</h2>
+        <p style="color: #aaa;">Введите отзыв о фильме, и мы определим, позитивный он, негативный или нейтральный.</p>
+        
+        <textarea id="reviewText" style="width: 100%; height: 100px; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; margin-bottom: 15px; box-sizing: border-box;" placeholder="Например: Отличный фильм! Сюжет держит в напряжении..."></textarea>
+        
+        <button onclick="analyze()" style="width: 100%; padding: 12px; background: #e50914; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">Анализировать</button>
+        
+        <div id="result" style="margin-top: 20px; padding: 15px; border-radius: 5px; display: none;"></div>
+    </div>
+
+    <script>
+        async function analyze() {
+            const text = document.getElementById('reviewText').value;
+            const resultDiv = document.getElementById('result');
+            if (!text.trim()) { alert('Введите текст!'); return; }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.style.background = '#333';
+            resultDiv.innerHTML = 'Анализ...';
+
+            try {
+                const response = await fetch('/api/sentiment/predict/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let color = data.label === 'Positive' ? '#155724' : (data.label === 'Negative' ? '#721c24' : '#856404');
+                    resultDiv.style.background = color;
+                    resultDiv.innerHTML = `<strong>Результат:</strong> ${data.label}<br><strong>Уверенность:</strong> ${(data.confidence * 100).toFixed(1)}%`;
+                } else {
+                    resultDiv.innerHTML = `Ошибка: ${data.error}`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = 'Ошибка соединения с сервером';
+            }
+        }
+    </script>
+{% endblock %}

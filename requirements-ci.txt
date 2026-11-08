@@ -1,0 +1,31 @@
+﻿# ============================================
+# Зависимости для CI/CD (GitHub Actions)
+# Без Windows-специфичных пакетов (pywinpty и т.д.)
+# ============================================
+
+# Django и DRF
+Django==5.2.14
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.28.0
+django-cors-headers==4.7.0
+
+# База данных
+sqlparse==0.5.5
+asgiref==3.11.1
+
+# Утилиты
+python-dotenv==1.2.1
+requests==2.32.5
+pytz==2025.2
+
+# Тестирование
+pytest==9.0.3
+pytest-django==4.12.0
+pytest-cov==7.0.0
+
+
+numpy
+torch
+pymorphy3
+navec
