@@ -31,12 +31,19 @@ function MoviePage() {
     e.preventDefault();
     if (!text.trim()) return;
 
+    // Достаем токен из localStorage (проверь, как он у тебя называется: 'access_token', 'token' или 'access')
+    const token = localStorage.getItem('access_token'); 
+
     fetch('http://localhost:8000/api/v1/reviews/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+          'Content-Type': 'application/json',
+          // Если токен есть, добавляем его в заголовок
+          ...(token && { 'Authorization': `Bearer ${token}` })
+      },
       body: JSON.stringify({ movie: id, text: text })
     })
-    .then(res => {
+    .then(async res => {
       if (res.ok) {
         setText('');
         // Обновляем список отзывов
@@ -44,7 +51,13 @@ function MoviePage() {
           .then(r => r.json())
           .then(d => setReviews(Array.isArray(d) ? d : d.results || []));
       } else {
-        alert('Ошибка при отправке. Проверьте, что Django запущен.');
+        // Пытаемся прочитать ошибку от Django (например, "Вы уже оставили отзыв")
+        const errorData = await res.json();
+        if (errorData.error) {
+            alert(errorData.error); // Показываем текст ошибки пользователю
+        } else {
+            alert('Ошибка при отправке. Проверьте, что Django запущен.');
+        }
       }
     });
   };
@@ -94,11 +107,21 @@ function MoviePage() {
       <h2 style={{ color: 'white' }}>Отзывы ({reviews.length})</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         {reviews.map(review => (
-          <div key={review.id} style={{ background: '#1f1f1f', padding: '15px', borderRadius: '5px' }}>
-            <p style={{ margin: '0 0 10px 0', color: 'white' }}>{review.text}</p>
-            <small style={{ color: '#666' }}>{new Date(review.created_at).toLocaleString()}</small>
-          </div>
-        ))}
+  <div key={review.id} style={{ background: '#1f1f1f', padding: '15px', borderRadius: '5px' }}>
+    
+    {/* ДОБАВЛЯЕМ ИМЯ АВТОРА И ДАТУ */}
+    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+      <strong style={{ color: '#e50914', fontSize: '1.1rem' }}>
+        {review.user || 'Аноним'}
+      </strong>
+      <small style={{ color: '#666' }}>
+        {new Date(review.created_at).toLocaleString()}
+      </small>
+    </div>
+
+    <p style={{ margin: '0', color: 'white' }}>{review.text}</p>
+  </div>
+))}
         {reviews.length === 0 && <p style={{ color: '#aaa' }}>Пока нет отзывов. Будьте первым!</p>}
       </div>
     </div>

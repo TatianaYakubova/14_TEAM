@@ -31,6 +31,7 @@ urlpatterns = [
     # --- Новый API v1 (для React) ---
     path('api/v1/', include(router.urls)),
 
+
     # --- Наши HTML-страницы (для Django) ---
     path('', index_view, name='index'),
     path('sentiment/', sentiment_page, name='sentiment'),
