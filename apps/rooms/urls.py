@@ -15,4 +15,5 @@ urlpatterns = [
     path('<int:room_id>/combined-settings/', views.get_combined_settings, name='combined_settings'),
     # 🔽 НОВОЕ: история голосов комнаты
     path('<int:room_id>/vote-history/', views.get_vote_history, name='vote_history'),
+    path('purposes/', views.get_purposes, name='room_purposes'),
 ]

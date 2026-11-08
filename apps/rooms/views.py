@@ -1,15 +1,16 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import IntegrityError
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
+from apps.rooms.models import Room, RoomVote, RoomMemberSettings, RoomPurpose
 import secrets
 import logging
 
-from apps.rooms.models import Room, RoomVote, RoomMemberSettings
+
 from apps.movies.models import Movie
 
 logger = logging.getLogger(__name__)
@@ -161,10 +162,11 @@ def get_my_rooms(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_room(request):
-    """Создание новой комнаты"""
+    """Создание новой комнаты с выбором цели"""
     try:
         code = request.data.get('code', '').strip()
-        
+        purpose_code = request.data.get('purpose', 'friendly') # По умолчанию "Дружеский вечер"
+
         if not code:
             code = f"ROOM_{secrets.token_urlsafe(6)}"
 
@@ -174,12 +176,18 @@ def create_room(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Ищем цель в справочнике
+        purpose_obj = None
+        if purpose_code:
+            purpose_obj = RoomPurpose.objects.filter(code=purpose_code).first()
+
         invite_code = secrets.token_urlsafe(16)
         
         room = Room.objects.create(
             code=code, 
             creator=request.user, 
             invite_code=invite_code,
+            purpose=purpose_obj # <--- СОХРАНЯЕМ ЦЕЛЬ
         )
         room.members.add(request.user)
         
@@ -190,7 +198,7 @@ def create_room(request):
             max_duration=None,
         )
 
-        logger.info(f"Комната '{code}' создана пользователем {request.user.username}")
+        logger.info(f"Комната '{code}' создана пользователем {request.user.username} с целью {purpose_code}")
         return Response({
             'id': room.id, 
             'code': room.code, 
@@ -198,6 +206,7 @@ def create_room(request):
             'invite_link': f"http://127.0.0.1:3000/?room={room.invite_code}",
             'is_creator': True, 
             'member_count': room.members.count(),
+            'purpose': room.purpose.code if room.purpose else None, # Отдаем цель обратно
         }, status=status.HTTP_201_CREATED)
 
     except IntegrityError:
@@ -205,7 +214,6 @@ def create_room(request):
     except Exception as e:
         logger.error(f"[CREATE ROOM ERROR] {e}", exc_info=True)
         return Response({'error': 'Внутренняя ошибка сервера.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 @extend_schema(
     summary="Присоединиться к комнате",
@@ -754,3 +762,9 @@ def get_vote_history(request, room_id):
             {'error': 'Ошибка загрузки истории голосов'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_purposes(request):
+    purposes = RoomPurpose.objects.all()
+    data = [{'code': p.code, 'name': p.name, 'description': p.description, 'icon': p.icon} for p in purposes]
+    return Response(data)

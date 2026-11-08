@@ -1,6 +1,12 @@
 from django.db import models
 from django.conf import settings
 
+class RoomPurpose(models.Model):
+    """Справочник целей для комнаты"""
+    code = models.CharField(max_length=50, unique=True, help_text="Код цели (для логики)")
+    name = models.CharField(max_length=100, help_text="Название для отображения")
+    description = models.TextField(blank=True, null=True, help_text="Описание цели")
+    icon = models.CharField(max_length=50, blank=True, null=True, help_text="Иконка или эмодзи")
 
 class Room(models.Model):
     code = models.CharField(max_length=50, unique=True)
@@ -9,6 +15,8 @@ class Room(models.Model):
     invite_code = models.CharField(max_length=50, unique=True, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    purpose = models.ForeignKey(RoomPurpose, on_delete=models.SET_NULL, null=True, blank=True, related_name='rooms')
+    
     
     # УСТАРЕВШИЕ поля — оставлены для обратной совместимости, не используются
     mood_genre = models.CharField(max_length=50, blank=True, null=True)
@@ -65,3 +73,11 @@ class RoomVote(models.Model):
         unique_together = ('room', 'user', 'movie')
         verbose_name = 'Голос'
         verbose_name_plural = 'Голоса'
+        
+    
+    class Meta:
+        verbose_name = "Цель комнаты"
+        verbose_name_plural = "Цели комнат"
+
+    def __str__(self):
+        return self.name

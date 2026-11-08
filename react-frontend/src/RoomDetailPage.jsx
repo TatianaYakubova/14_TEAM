@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import RoomMembers from './RoomMembers';
+import RoomRecommendations from './RoomRecommendations'; // <--- ИМПОРТИРУЕМ НОВЫЙ КОМПОНЕНТ
 
 function RoomDetailPage() {
   const { id } = useParams();
@@ -16,7 +17,6 @@ function RoomDetailPage() {
     }
 
     // Загружаем данные самой комнаты (название)
-    // Так как API для получения одной комнаты нет, мы просто запросим список и найдем нужную
     fetch('http://localhost:8000/api/rooms/', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -43,16 +43,16 @@ function RoomDetailPage() {
 
       <h1 style={{ color: 'white', marginBottom: '10px' }}>Комната: {room.code}</h1>
       
-      {/* Блок Участников (использует наш новый компонент) */}
+      {/* Блок Участников */}
       <div style={{ background: '#14201c', padding: '20px', borderRadius: '12px', border: '1px solid #1c2b25', marginBottom: '30px' }}>
         <h3 style={{ color: 'white', marginBottom: '15px' }}>Участники</h3>
         <RoomMembers roomId={id} />
       </div>
 
-      {/* Блок Голосования */}
+      {/* БЛОК РЕКОМЕНДАЦИЙ И ЦЕЛЕЙ */}
+      {/* Мы заменили старый блок "Голосование" на этот компонент */}
       <div style={{ background: '#14201c', padding: '20px', borderRadius: '12px', border: '1px solid #1c2b25' }}>
-        <h3 style={{ color: 'white', marginBottom: '15px' }}>Голосование</h3>
-        <p style={{ color: '#a0a0a0' }}>Здесь будет список фильмов для голосования.</p>
+        <RoomRecommendations roomId={id} />
       </div>
     </div>
   );

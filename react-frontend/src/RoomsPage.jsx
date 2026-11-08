@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const PURPOSES = [
+    { code: 'friendly', name: 'Дружеский вечер', icon: '🍻' },
+    { code: 'romantic', name: 'Романтика', icon: '❤️' },
+    { code: 'horror', name: 'Ужастики', icon: '👻' },
+    { code: 'family', name: 'Семейный вечер', icon: '👨‍👩‍👧‍👦' },
+    { code: 'solo', name: 'Для себя', icon: '🧘' },
+    { code: 'educational', name: 'Обучение', icon: '📚' },
+    { code: 'true_story', name: 'Реальные события', icon: '🎬' },
+];
+
 function RoomsPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newRoomName, setNewRoomName] = useState('');
-  const [joinCode, setJoinCode] = useState(''); // Для присоединения
+  const [newRoomPurpose, setNewRoomPurpose] = useState('friendly'); // Цель по умолчанию
+  const [joinCode, setJoinCode] = useState('');
   const navigate = useNavigate();
 
   // Функция загрузки комнат
@@ -39,7 +50,7 @@ function RoomsPage() {
     fetchRooms();
   }, []);
 
-  // Создание комнаты
+  // Создание комнаты (С ДОБАВЛЕНИЕМ ЦЕЛИ)
   const handleCreateRoom = (e) => {
     e.preventDefault();
     if (!newRoomName.trim()) return;
@@ -52,7 +63,10 @@ function RoomsPage() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ code: newRoomName }) 
+      body: JSON.stringify({ 
+        code: newRoomName,
+        purpose: newRoomPurpose // <--- ПЕРЕДАЕМ ВЫБРАННУЮ ЦЕЛЬ
+      }) 
     })
     .then(res => {
       if (res.ok) {
@@ -104,16 +118,46 @@ function RoomsPage() {
       {/* Форма создания комнаты */}
       <div style={{ background: '#14201c', padding: '20px', borderRadius: '12px', border: '1px solid #1c2b25', marginBottom: '30px' }}>
         <h3 style={{ color: 'white', marginBottom: '15px' }}>Создать новую комнату</h3>
-        <form onSubmit={handleCreateRoom} style={{ display: 'flex', gap: '10px' }}>
+        <form onSubmit={handleCreateRoom} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          
           <input 
             type="text" 
             placeholder="Название комнаты (например: Вечер с друзьями)" 
             value={newRoomName}
             onChange={e => setNewRoomName(e.target.value)}
-            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0d1411', color: 'white' }}
+            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0d1411', color: 'white' }}
           />
-          <button type="submit" style={{ padding: '10px 20px', background: '#e50914', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            Создать
+
+          {/* ВЫБОР ЦЕЛИ */}
+          <div>
+            <p style={{ color: '#aaa', marginBottom: '8px', fontSize: '14px' }}>Выберите цель вечера:</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {PURPOSES.map(p => (
+                    <button
+                        key={p.code}
+                        type="button"
+                        onClick={() => setNewRoomPurpose(p.code)}
+                        style={{
+                            padding: '8px 12px',
+                            borderRadius: '20px',
+                            border: newRoomPurpose === p.code ? '2px solid #e50914' : '1px solid #444',
+                            background: newRoomPurpose === p.code ? '#e50914' : '#222',
+                            color: '#fff',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                        }}
+                    >
+                        {p.icon} {p.name}
+                    </button>
+                ))}
+            </div>
+          </div>
+
+          <button type="submit" style={{ padding: '12px', background: '#e50914', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+            Создать комнату
           </button>
         </form>
       </div>
@@ -154,8 +198,8 @@ function RoomsPage() {
                 
                 <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
                   <button 
-                    onClick={() => {
-                      // Берем только код из ссылки (все, что после '=')
+                    onClick={(e) => {
+                      e.stopPropagation(); // Чтобы не перекинуло в комнату при клике на кнопку
                       const code = room.invite_link.split('=')[1];
                       navigator.clipboard.writeText(code);
                       alert(`Код комнаты: ${code}\nСкопирован в буфер обмена!`);
@@ -165,7 +209,8 @@ function RoomsPage() {
                     📋 Копировать код
                   </button>
                   <button 
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       navigator.clipboard.writeText(room.invite_link);
                       alert('Ссылка скопирована! Отправьте её другу.');
                     }}
