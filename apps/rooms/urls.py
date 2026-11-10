@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.list_rooms, name='list_rooms'),
-    path('my-rooms/', views.get_my_rooms, name='my_rooms'),
+    path('my_rooms/', views.get_my_rooms, name='my_rooms'),
     path('create/', views.create_room, name='create_room'),
     path('join/', views.join_room, name='join_room'),
     path('<int:room_id>/leave/', views.leave_room, name='leave_room'),
@@ -16,4 +16,5 @@ urlpatterns = [
     # 🔽 НОВОЕ: история голосов комнаты
     path('<int:room_id>/vote-history/', views.get_vote_history, name='vote_history'),
     path('purposes/', views.get_purposes, name='room_purposes'),
+    path('<int:room_id>/', views.get_room_detail, name='room_detail'),
 ]

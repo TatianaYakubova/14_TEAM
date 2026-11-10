@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import RoomMembers from './RoomMembers';
-import RoomRecommendations from './RoomRecommendations'; // <--- ИМПОРТИРУЕМ НОВЫЙ КОМПОНЕНТ
+import RoomRecommendations from './RoomRecommendations';
 
 function RoomDetailPage() {
   const { id } = useParams();
@@ -16,21 +16,27 @@ function RoomDetailPage() {
       return;
     }
 
-    // Загружаем данные самой комнаты (название)
-    fetch('http://localhost:8000/api/rooms/', {
+    // ЗАПРАШИВАЕМ КОНКРЕТНУЮ КОМНАТУ ПО ID
+    fetch(`http://localhost:8000/api/rooms/${id}/`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error('Комната не найдена или нет доступа');
+      return res.json();
+    })
     .then(data => {
-      const roomList = Array.isArray(data) ? data : data.results || [];
-      const foundRoom = roomList.find(r => r.id === parseInt(id));
-      setRoom(foundRoom);
+      setRoom(data);
       setLoading(false); 
+    })
+    .catch((err) => {
+      console.error(err);
+      setRoom(null);
+      setLoading(false);
     });
   }, [id, navigate]);
 
   if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Загрузка комнаты...</div>;
-  if (!room) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Комната не найдена</div>;
+  if (!room) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Комната не найдена или у вас нет к ней доступа</div>;
 
   return (
     <div className="catalog-container" style={{ maxWidth: '900px' }}>
@@ -49,8 +55,7 @@ function RoomDetailPage() {
         <RoomMembers roomId={id} />
       </div>
 
-      {/* БЛОК РЕКОМЕНДАЦИЙ И ЦЕЛЕЙ */}
-      {/* Мы заменили старый блок "Голосование" на этот компонент */}
+      {/* Блок Рекомендаций (тут сработает запрос к recommendations/room/id/) */}
       <div style={{ background: '#14201c', padding: '20px', borderRadius: '12px', border: '1px solid #1c2b25' }}>
         <RoomRecommendations roomId={id} />
       </div>

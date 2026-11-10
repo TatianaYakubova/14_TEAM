@@ -768,3 +768,26 @@ def get_purposes(request):
     purposes = RoomPurpose.objects.all()
     data = [{'code': p.code, 'name': p.name, 'description': p.description, 'icon': p.icon} for p in purposes]
     return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_room_detail(request, room_id):
+    """Возвращает данные одной конкретной комнаты"""
+    try:
+        room = Room.objects.get(id=room_id, is_active=True)
+        
+        # Проверяем, что пользователь имеет право видеть эту комнату
+        if request.user not in room.members.all() and request.user != room.creator:
+            return Response({'error': 'Вы не участник этой комнаты'}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response({
+            'id': room.id,
+            'code': room.code,
+            'creator': room.creator.id,
+            'invite_link': f"http://127.0.0.1:3000/?room={room.invite_code}",
+            'is_creator': room.creator.id == request.user.id,
+            'member_count': room.members.count(),
+            'purpose': room.purpose.code if room.purpose else 'friendly'
+        })
+    except Room.DoesNotExist:
+        return Response({'error': 'Комната не найдена'}, status=status.HTTP_404_NOT_FOUND)

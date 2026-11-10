@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // <--- Объединили в одну строчку
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -56,6 +56,10 @@ function LoginPage() {
           Войти
         </button>
       </form>
+      
+      <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px', color: '#aaa' }}>
+        Нет аккаунта? <Link to="/register" style={{ color: '#e50914', textDecoration: 'none' }}>Зарегистрироваться</Link>
+      </p>
     </div>
   );
 }

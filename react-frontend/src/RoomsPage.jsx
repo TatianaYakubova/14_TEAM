@@ -11,16 +11,30 @@ const PURPOSES = [
     { code: 'true_story', name: 'Реальные события', icon: '🎬' },
 ];
 
+// Компонент крутящегося спиннера
+const Spinner = () => (
+  <span style={{ 
+    display: 'inline-block', width: '16px', height: '16px', 
+    border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', 
+    borderRadius: '50%', animation: 'spin 1s linear infinite' 
+  }}></span>
+);
+
 function RoomsPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
   const [newRoomName, setNewRoomName] = useState('');
-  const [newRoomPurpose, setNewRoomPurpose] = useState('friendly'); // Цель по умолчанию
+  const [newRoomPurpose, setNewRoomPurpose] = useState('friendly');
+  const [isCreating, setIsCreating] = useState(false); // Лоудер для создания
+  
   const [joinCode, setJoinCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false); // Лоудер для присоединения
+  
   const navigate = useNavigate();
 
-  // Функция загрузки комнат
+  // Функция загрузки комнат (С ИСПОЛЬЗОВАНИЕМ my_rooms)
   const fetchRooms = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -28,7 +42,7 @@ function RoomsPage() {
       return;
     }
 
-    fetch('http://localhost:8000/api/rooms/', {
+    fetch('http://localhost:8000/api/rooms/my_rooms/', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(res => {
@@ -50,10 +64,11 @@ function RoomsPage() {
     fetchRooms();
   }, []);
 
-  // Создание комнаты (С ДОБАВЛЕНИЕМ ЦЕЛИ)
+  // Создание комнаты
   const handleCreateRoom = (e) => {
     e.preventDefault();
     if (!newRoomName.trim()) return;
+    setIsCreating(true); // Включаем лоудер
 
     const token = localStorage.getItem('access_token');
 
@@ -65,7 +80,7 @@ function RoomsPage() {
       },
       body: JSON.stringify({ 
         code: newRoomName,
-        purpose: newRoomPurpose // <--- ПЕРЕДАЕМ ВЫБРАННУЮ ЦЕЛЬ
+        purpose: newRoomPurpose
       }) 
     })
     .then(res => {
@@ -78,13 +93,15 @@ function RoomsPage() {
         });
       }
     })
-    .catch(() => alert('Ошибка сети'));
+    .catch(() => alert('Ошибка сети'))
+    .finally(() => setIsCreating(false)); // Выключаем лоудер в любом случае
   };
 
   // Присоединение к комнате
   const handleJoinRoom = (e) => {
     e.preventDefault();
     if (!joinCode.trim()) return;
+    setIsJoining(true); // Включаем лоудер
 
     const token = localStorage.getItem('access_token');
 
@@ -105,14 +122,18 @@ function RoomsPage() {
         return res.json().then(err => { throw new Error(err.error || 'Неверный код') });
       }
     })
-    .catch(err => alert(err.message));
+    .catch(err => alert(err.message))
+    .finally(() => setIsJoining(false)); // Выключаем лоудер
   };
 
-  if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Загрузка комнат...</div>;
+  if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px', fontSize: '20px' }}>Загрузка комнат...</div>;
   if (error) return <div style={{ color: '#e50914', textAlign: 'center', marginTop: '50px' }}>Ошибка: {error}</div>;
 
   return (
     <div className="catalog-container">
+      {/* CSS для анимации спиннера */}
+      <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      
       <h2>Комнаты для совместного просмотра</h2>
       
       {/* Форма создания комнаты */}
@@ -128,7 +149,6 @@ function RoomsPage() {
             style={{ padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0d1411', color: 'white' }}
           />
 
-          {/* ВЫБОР ЦЕЛИ */}
           <div>
             <p style={{ color: '#aaa', marginBottom: '8px', fontSize: '14px' }}>Выберите цель вечера:</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -156,8 +176,25 @@ function RoomsPage() {
             </div>
           </div>
 
-          <button type="submit" style={{ padding: '12px', background: '#e50914', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
-            Создать комнату
+          <button 
+            type="submit" 
+            disabled={isCreating} // Блокируем кнопку во время загрузки
+            style={{ 
+              padding: '12px', 
+              background: isCreating ? '#555' : '#e50914', // Меняем цвет
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '8px', 
+              cursor: isCreating ? 'not-allowed' : 'pointer', // Меняем курсор
+              fontWeight: 'bold', 
+              fontSize: '16px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '10px'
+            }}
+          >
+            {isCreating ? <><Spinner /> Создаем...</> : 'Создать комнату'}
           </button>
         </form>
       </div>
@@ -173,8 +210,23 @@ function RoomsPage() {
             onChange={e => setJoinCode(e.target.value)}
             style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #333', background: '#0d1411', color: 'white' }}
           />
-          <button type="submit" style={{ padding: '10px 20px', background: '#8fbf9f', color: '#0d1411', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            Войти
+          <button 
+            type="submit" 
+            disabled={isJoining}
+            style={{ 
+              padding: '10px 20px', 
+              background: isJoining ? '#555' : '#8fbf9f', 
+              color: isJoining ? '#fff' : '#0d1411', 
+              border: 'none', 
+              borderRadius: '8px', 
+              cursor: isJoining ? 'not-allowed' : 'pointer', 
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            {isJoining ? <><Spinner /> Вход...</> : 'Войти'}
           </button>
         </form>
       </div>
@@ -199,7 +251,7 @@ function RoomsPage() {
                 <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
                   <button 
                     onClick={(e) => {
-                      e.stopPropagation(); // Чтобы не перекинуло в комнату при клике на кнопку
+                      e.stopPropagation();
                       const code = room.invite_link.split('=')[1];
                       navigator.clipboard.writeText(code);
                       alert(`Код комнаты: ${code}\nСкопирован в буфер обмена!`);
