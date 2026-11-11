@@ -1,0 +1,19 @@
+Загружаем данные из базы...
+
+--- Проверка таблицы Movies ---
+
+--- Проверка таблицы Reviews ---
+
+=== ОТЧЕТ О ВАЛИДАЦИИ ===
+
+Таблица: Movies
+  ✅ PASSED: expect_column_values_to_not_be_null
+  ❌ FAILED: expect_column_values_to_be_between | Детали: {'element_count': 203559, 'unexpected_count': 3, 'unexpected_percent': 0.0014738393515106854, 'partial_unexpected_list': [1899.0, 1897.0, 1894.0], 'missing_count': 9, 'missing_percent': 0.004421322564956597, 'unexpected_percent_total': 0.0014737741883188657, 'unexpected_percent_nonmissing': 0.0014738393515106854}
+  ✅ PASSED: expect_column_values_to_be_between
+  ✅ PASSED: expect_column_values_to_be_unique
+  ❌ FAILED: expect_table_row_count_to_be_between | Детали: {'observed_value': 203559}
+
+Таблица: Reviews
+  ✅ PASSED: expect_column_values_to_be_in_set
+  ✅ PASSED: expect_column_values_to_not_be_null
+  ❌ FAILED: expect_column_values_to_not_be_null | Детали: {'element_count': 22, 'unexpected_count': 13, 'unexpected_percent': 59.09090909090909, 'partial_unexpected_list': [nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan]}

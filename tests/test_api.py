@@ -49,14 +49,11 @@ def test_profile_unauthorized(client):
 # Тест 4: Проверка сохранения отзыва с привязкой к пользователю
 @pytest.mark.django_db
 def test_create_review(test_movie):
-    # Создаем пользователя
     user = User.objects.create_user(username='reviewer', password='password123')
     
-    # ИСПОЛЬЗУЕМ APICLIENT (вместо обычного client)
     api_client = APIClient()
     api_client.force_authenticate(user=user)
     
-    # Отправляем отзыв через API
     url = reverse('review-list')
     data = {
         'movie': test_movie.id,
@@ -64,11 +61,44 @@ def test_create_review(test_movie):
     }
     response = api_client.post(url, data=data, content_type='application/json')
     
-    # Проверяем, что отзыв создался
     assert response.status_code == status.HTTP_201_CREATED
     assert Review.objects.count() == 1
     
-    # Проверяем, что отзыв привязался к пользователю и нейросеть определила тональность
     review = Review.objects.first()
     assert review.user == user
     assert review.sentiment == 'Positive'
+
+
+# ==========================================
+# ТЕСТЫ ДЛЯ ОЦЕНКИ КАЧЕСТВА И УСТОЙЧИВОСТИ МОДЕЛИ
+# ==========================================
+
+# 5. Проверка на английском языке (Domain Shift)
+@pytest.mark.django_db
+def test_subgroup_english_text(client):
+    url = reverse('predict_api')
+    response = client.post(url, data={'text': 'Amazing movie! I loved it so much.'}, content_type='application/json')
+    assert response.status_code == 200
+
+# 6. Проверка на пустую строку
+@pytest.mark.django_db
+def test_edge_case_empty_string(client):
+    url = reverse('predict_api')
+    response = client.post(url, data={'text': ''}, content_type='application/json')
+    assert response.status_code in [400, 200] 
+
+# 7. Проверка на очень длинный текст
+@pytest.mark.django_db
+def test_edge_case_very_long_text(client):
+    url = reverse('predict_api')
+    long_text = "Отличный фильм! " * 500 
+    response = client.post(url, data={'text': long_text}, content_type='application/json')
+    assert response.status_code == 200
+
+# 8. Проверка на сильный негатив
+@pytest.mark.django_db
+def test_expected_behavior_strong_negative(client):
+    url = reverse('predict_api')
+    response = client.post(url, data={'text': 'Ужасный, отвратительный фильм. Худшее, что я видел!'}, content_type='application/json')
+    assert response.status_code == 200
+    assert response.json()['label'] == 'Negative'
