@@ -81,28 +81,38 @@ def load_model():
     )
 
 
-def predict(text: str) -> str:
-    """
-    Возвращает один из классов: 'Neutral', 'Positive', 'Negative'.
-    При любой ошибке возвращает 'Unknown' (не падает наверх).
-    """
+def predict(text):
     try:
         load_model()
 
+        # 1. Очистка текста
         tokens = re.sub(r'[^а-яё\s]', '', str(text).lower()).split()
+        
+        # 2. ЗАЩИТА ОТ МУСОРА: Если после очистки меньше 2 слов — это мусор
+        if len(tokens) < 2:
+            return 'Unknown'
+
+        # 3. Лемматизация
         lemmas = [MORPH.parse(w)[0].normal_form for w in tokens]
 
-        seq = [WORD2IDX.get(tok, 1) for tok in lemmas][:MAX_LEN]
-        if len(seq) < MAX_LEN:
-            seq += [0] * (MAX_LEN - len(seq))
+        # 4. Подготовка тензора
+        seq = [WORD2IDX.get(tok, 1) for tok in lemmas][:100]
+        if len(seq) < 100:
+            seq += [0] * (100 - len(seq))
 
         tensor = torch.tensor(seq, dtype=torch.long).unsqueeze(0).to(DEVICE)
+        
         with torch.no_grad():
             logits = MODEL(tensor)
             probs = F.softmax(logits, dim=1).cpu().numpy()[0]
+            
+            # 5. ЗАЩИТА ОТ НЕУВЕРЕННОСТИ: Если модель не уверена (вероятность < 60%)
+            max_prob = np.max(probs)
+            if max_prob < 0.60:
+                return 'Unknown'
+                
             pred = int(np.argmax(probs))
 
         return LABELS[pred]
     except Exception:
-        logger.exception("Sentiment prediction failed")
         return 'Unknown'

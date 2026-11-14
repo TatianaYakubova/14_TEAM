@@ -102,3 +102,25 @@ def test_expected_behavior_strong_negative(client):
     response = client.post(url, data={'text': 'Ужасный, отвратительный фильм. Худшее, что я видел!'}, content_type='application/json')
     assert response.status_code == 200
     assert response.json()['label'] == 'Negative'
+    
+from unittest.mock import patch
+
+from unittest.mock import patch
+
+from unittest.mock import patch
+
+# Тест 9: Проверка поведения, если ML-модель недоступна (Mock)
+@pytest.mark.django_db
+def test_sentiment_predict_model_failure(client):
+    url = reverse('predict_api')
+    
+    # Мокаем вызов функции predict
+    with patch('apps.sentiment.views.predict') as mock_predict:
+        # Имитируем сбой модели
+        mock_predict.side_effect = Exception("Модель недоступна!")
+        
+        response = client.post(url, data={'text': 'Тестовый текст'}, content_type='application/json')
+        
+        # Сервер должен корректно обработать ошибку и вернуть 500, а не упасть
+        assert response.status_code == 500
+        assert 'error' in response.json()

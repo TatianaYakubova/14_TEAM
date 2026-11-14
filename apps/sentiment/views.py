@@ -84,8 +84,13 @@ def sentiment_page(request):
 @csrf_exempt
 def predict_api(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        text = data.get('text', '')
-        result = predict(text)
-        return JsonResponse({"label": result})
+        try:
+            data = json.loads(request.body)
+            text = data.get('text', '')
+            result = predict(text)
+            return JsonResponse({"label": result})
+        except Exception as e:
+            # Если нейросеть упала, возвращаем 500, но сервер не падает
+            return JsonResponse({"error": f"Ошибка модели: {str(e)}"}, status=500)
+    
     return JsonResponse({"error": "Method not allowed"}, status=405)

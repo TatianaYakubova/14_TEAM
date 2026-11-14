@@ -7,4 +7,5 @@ urlpatterns = [
     
     # Эндпоинт для рекомендаций комнаты (он заменил старый consensus)
     path('room/<int:room_id>/', views.room_recommendations, name='room-recommendations'),
+    path('metrics/', views.get_system_metrics, name='system_metrics'),
 ]
